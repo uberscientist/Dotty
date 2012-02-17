@@ -1,0 +1,12 @@
+body {
+  font-family: sans-serif;
+}
+
+#page-wrap {
+  width: 777px;
+  margin: 20px auto;
+}
+
+#dotty-canv {
+  border: solid 3px black;
+}
