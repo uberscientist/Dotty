@@ -1,5 +1,15 @@
 body {
-  font-family: sans-serif;
+  font-family: "Lucida Grande", sans-serif;
+  background-color: #FBFF8E;
+}
+
+img#title-image {
+  margin: 20px 0px -20px 20px;
+}
+
+h2 {
+  position: relative;
+  left: 40px;
 }
 
 #page-wrap {
@@ -8,5 +18,23 @@ body {
 }
 
 #dotty-canv {
-  border: solid 3px black;
+  background-color: #FFF;
+  border: solid 3px #6A4700;
+  border-radius: 5px;
+  margin: 10px auto;
+  display: block;
+}
+
+#artist-display {
+  padding: 5px;
+  border: 3px solid #6A4700;
+  border-radius: 5px;
+}
+
+.artist {
+  width: 10px;
+  height: 10px;
+  border: 1px solid #000;
+  border-radius: 10px;
+  display: inline-block;
 }

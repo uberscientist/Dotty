@@ -3,19 +3,23 @@
 <head>
   <title>Dotty</title>
   <link rel="stylesheet" type="text/css" href="style.css" />
-  <script type="text/javascript" src="http://jqueryjs.googlecode.com/files/jquery-1.2.6.min.js"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
   <script src="http://localhost:4444/socket.io/socket.io.js"></script>
   <script src="dotty.js"></script>
   <script type="text/javascript" src="jscolor/jscolor.js"></script>
 </head>
 <body>
+  <img id="title-image"  src="title.png" />
+  <h2>Turn-based multiplayer pointillism.</h2>
   <div id="page-wrap">
-    <h1>Dotty:</h1>
-    <p>The collaborative emergent art project</p>
-    <canvas id="dotty-canv"></canvas>
+    <canvas id="dotty-canv" width=500 height=300></canvas>
     <br/>
     Color Picker:
     <input class="color" value="00D6F7">
+    <p>Connected Artists:</p> 
+    <div id="artist-display">
+      <!-- this is where we append divs for each client connected -->
+    </div>
   </div>
 </body>
 </html>
