@@ -1,4 +1,5 @@
-var socket = io.connect('http://localhost:4444');
+var socket = io.connect('http://mindsforge.com:4444');
+var turnflag;
 
 /**
   Functions
@@ -15,20 +16,26 @@ function place_circle(obj){
   ctx.closePath();
   ctx.fillStyle = '#'+color;
   ctx.fill();
+
 }
 
 //Add new artist DIV
 function add_artist(id){
 
-  //Select container DIV and append artist class div with unique ID
-  $('div#artist-display').append('<div class=\"artist\" id=\"'+ id + '\">');
+  //if artist DIV exists, do nothing
+  if($('div#'+ id +'.artist').length){
+  } else {
+
+    //Select container DIV and append artist class div with unique ID
+    $('div#artist-display').append('<div class=\"artist\" id=\"'+ id + '\">');
+  }
 }
 
 //Remove artist DIV
 function rm_artist(id){
 
-  //Select container DIV and  artist class div with unique ID
-  $('div#artist-display').remove();
+  //Select container DIV and remove artist class div with unique ID
+  $('div#'+ id +'.artist').remove();
 }
 
 
@@ -41,9 +48,9 @@ function update_artist(obj){
 
 //Update server with new dot info
 function update(obj){
-  socket.emit('place_dot',{x: obj.x,
-                           y: obj.y,
-                           color: obj.color});
+  socket.emit('place_dot',{ x     : obj.x,
+                            y     : obj.y,
+                            color : obj.color});
 }
 
 /**
@@ -53,11 +60,22 @@ function update(obj){
 //Recieve NEXT signal from server
 socket.on('next', function(data){
 
+  var active_player = $('div#' + data + '.artist');
+  var active_pos = active_player.position();
+  $('img#current-turn').animate({ top : active_pos.top - 17,
+                                  left: active_pos.left - 2 }, 100);
+  if(data == id){
+    turn_flag = true;
+  } else {
+    turn_flag = false;
+  }
 });
 
 
 //Recieve WELCOME from server
 socket.on('welcome', function(data){
+
+  //Global id variable
   id = data.id;
 
   //Loop through dot data and draw canvas
@@ -66,9 +84,7 @@ socket.on('welcome', function(data){
   }
 
   //Loop through existing IDs
-  for each(var other_id in data.other_ids){
-    add_artist(other_id)
-  }
+  data.other_ids.forEach(add_artist);
 
   //append your marker to the end of the others
   add_artist(id);
@@ -83,7 +99,11 @@ socket.on('place_dot', function(data){
 
 //New user connection
 socket.on('new_artist', function(data){
-  add_artist(data);
+ 
+  //Only add if not yourself
+  if(data != id){
+    add_artist(data);
+  }
 });
 
 //User leave
@@ -106,9 +126,6 @@ $(document).ready(function(){
   $('canvas#dotty-canv').hover(function(){
     $(this).css('cursor', 'crosshair');
   });
-  $('div.artist').hover(function(){
-    $(this).css('cursor', 'crosshair');
-  });
 
   //Click event listener on canvas
   $('canvas#dotty-canv').click(function(e){
@@ -116,13 +133,22 @@ $(document).ready(function(){
     //Canvas object
     var canv = $('canvas#dotty-canv');
 
-    //Create dot info object
-    var obj = { x: e.clientX - canv.offset().left - 2,
-                y: e.clientY - canv.offset().top - 3,
-                color: $('input.color').val() };
+    //check if if it's your turn
+    if(turn_flag == true){
 
-    place_circle(obj);
-    update(obj);
+      //Create dot info object
+      var obj = { x: e.clientX - canv.position().left - 2,
+                  y: e.clientY - canv.position().top - 3,
+                  color: $('input.color').val() };
+
+      //Draw dot clientside
+      place_circle(obj);
+
+      //Send server dot info
+      update(obj);
+    } else {
+      alert('it\'s not your turn!');
+    }
   });
 
   //Color picker change listener

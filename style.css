@@ -19,7 +19,7 @@ h2 {
 
 #dotty-canv {
   background-color: #FFF;
-  border: solid 3px #6A4700;
+  border: solid 2px #222;
   border-radius: 5px;
   margin: 10px auto;
   display: block;
@@ -27,14 +27,20 @@ h2 {
 
 #artist-display {
   padding: 5px;
-  border: 3px solid #6A4700;
+  border: 2px solid #222;
   border-radius: 5px;
 }
 
+#current-turn {
+  position: absolute;
+}
+
 .artist {
-  width: 10px;
-  height: 10px;
+  background-color: #00D6F7;
+  width: 15px;
+  height: 15px;
   border: 1px solid #000;
-  border-radius: 10px;
+  border-radius: 15px;
+  margin: 2px;
   display: inline-block;
 }
