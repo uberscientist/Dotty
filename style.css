@@ -1,6 +1,6 @@
 body {
   font-family: "Lucida Grande", sans-serif;
-  background-color: #FBFF8E;
+  background-color: #B1C4F9;
 }
 
 img#title-image {
@@ -27,8 +27,6 @@ h2 {
 
 #artist-display {
   padding: 5px;
-  border: 2px solid #222;
-  border-radius: 5px;
 }
 
 #current-turn {
@@ -43,4 +41,14 @@ h2 {
   border-radius: 15px;
   margin: 2px;
   display: inline-block;
+}
+
+.warning {
+  background-color: #EAF65F;
+  border: 2px solid #DFEB4D;
+  border-radius: 5px;
+  width: 500px;
+  height: 20px;
+  display: none;
+  margin: 5px auto;
 }

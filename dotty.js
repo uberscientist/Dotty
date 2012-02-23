@@ -1,5 +1,4 @@
 var socket = io.connect('http://mindsforge.com:4444');
-var turnflag;
 
 /**
   Functions
@@ -53,6 +52,30 @@ function update(obj){
                             color : obj.color});
 }
 
+//Function to broadcast color
+function send_color(){
+  var color = $('input.color').val();
+  obj = { color: color, id: id };
+  socket.emit('update_color', obj);
+  update_artist(obj);
+}
+
+//Warning message function
+function warn(msg){
+  $('div.warning').html(msg);
+  $('div.warning').fadeIn(200, function(){
+    $(this).fadeOut(1000);
+  });
+}
+
+//Check socket, reload if needed FF fix
+function check_ws(){
+  if(typeof(turn_flag) === 'undefined'){
+    location.reload(true);
+  }
+}
+
+
 /**
   Socket.IO events
 **/
@@ -88,6 +111,7 @@ socket.on('welcome', function(data){
 
   //append your marker to the end of the others
   add_artist(id);
+  send_color();
 });
 
 //Recieve dot broadcast from server
@@ -99,7 +123,10 @@ socket.on('place_dot', function(data){
 
 //New user connection
 socket.on('new_artist', function(data){
- 
+
+  //Update the newcomer on yor current color
+  send_color();
+
   //Only add if not yourself
   if(data != id){
     add_artist(data);
@@ -122,6 +149,12 @@ socket.on('update_color', function(data){
 
 $(document).ready(function(){
 
+  //Reload page after 4 seconds if can't hear broadcasts
+  setTimeout('check_ws()', 6000);
+
+  //Initialize color picker to random color
+  $('input.color').val(Math.floor(Math.random()*16777215).toString(16));
+
   //Change cursor when hovering canvas
   $('canvas#dotty-canv').hover(function(){
     $(this).css('cursor', 'crosshair');
@@ -130,15 +163,16 @@ $(document).ready(function(){
   //Click event listener on canvas
   $('canvas#dotty-canv').click(function(e){
 
-    //Canvas object
     var canv = $('canvas#dotty-canv');
+    var scroll_top = $(window).scrollTop();
+    var scroll_left = $(window).scrollLeft();
 
     //check if if it's your turn
     if(turn_flag == true){
 
       //Create dot info object
-      var obj = { x: e.clientX - canv.position().left - 2,
-                  y: e.clientY - canv.position().top - 3,
+      var obj = { x: e.clientX - canv.offset().left - scroll_left - 2,
+                  y: e.clientY - canv.offset().top + scroll_top - 2,
                   color: $('input.color').val() };
 
       //Draw dot clientside
@@ -147,15 +181,12 @@ $(document).ready(function(){
       //Send server dot info
       update(obj);
     } else {
-      alert('it\'s not your turn!');
+      warn('Woah there! It\'s almost your turn.')
     }
   });
 
-  //Color picker change listener
+  //Broadcast color change when color selector changes
   $('input.color').change(function(){
-    var color = $('input.color').val();
-    obj = {color: color, id: id};
-    socket.emit('update_color', obj);
-    update_artist(obj);
+    send_color();
   });
 });

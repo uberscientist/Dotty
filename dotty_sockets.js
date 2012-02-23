@@ -4,7 +4,6 @@ var io = require('socket.io').listen(4444),
 
 //Global array to store and order connected artists
 roto = [];
-console.log(roto);
 
 //Socket.IO setup
 //Lower default debug level to clean up console
@@ -24,26 +23,33 @@ function md5(plaintext){
   return md5;
 }
 
-
 //On connection event
 io.sockets.on('connection', function(socket){
 
-console.log('Connection... roto: ' + roto);
-//Cycle every 3 seconds
-if(typeof(roto_interval) !== 'undefined') {
+  //Get the user's IP hash
+  var ip_hash = md5(socket.handshake.address.address);
+
+  //Add ID to rotation array
+  if(roto.indexOf(ip_hash) == -1){
+    roto.push(ip_hash);
+  }
+
+  //If there is no one else, allow forever alone to place dots
+  if(roto.length < 2){
+    cycle();
+  }
+
+  console.log('Connection... roto: ' + roto);
+
+  //Cycle every 3 seconds
   console.log('roto_interval\'s type:' + typeof(roto_interval));
-  console.log('so the interval has started');
-} else {
-  console.log('Now we begin the interval');
-  roto_interval = setInterval(cycle, 3000);
-}
+  if(typeof(roto_interval) !== 'undefined') {
+    console.log('so the interval is running, no need to start another...');
+  } else {
+    console.log('Now we begin the turn broadcasts!');
+    roto_interval = setInterval(cycle, 3000);
+  }
 
-
-  //Get the user's IP address
-  var ip = socket.handshake.address.address;
-
-  //Make MD5 hash of it
-  var ip_hash = md5(ip);
 
   //Check if Redis has record of ID
   db.sismember('dotty:ids', ip_hash, function(err, data){
@@ -53,11 +59,8 @@ if(typeof(roto_interval) !== 'undefined') {
       welcome(ip_hash);
     } else {
 
-      //Add new ID to set
+     //Add new ID to set
       db.sadd('dotty:ids', ip_hash, function(){
-
-        //Add ID to rotation array
-        roto.push(ip_hash);
 
         //Welcome the newcomer
         welcome(ip_hash);
@@ -83,12 +86,19 @@ if(typeof(roto_interval) !== 'undefined') {
   socket.on('place_dot', function(data){
     var string_data = JSON.stringify(data);
 
-    //add dot info to dot Redis list
-    db.rpush('dotty:dots',string_data , function(){
+    //Get the user's IP hash
+    var ip_hash = md5(socket.handshake.address.address);
+    console.log('Trying to place dot: ' + ip_hash);
+    console.log('On this guys turn: ' + roto[0]);
+    if(ip_hash == roto[0]){
 
-      //Broadcast dot object to all connected
-      socket.broadcast.emit('place_dot', data);
-    });
+      //add dot info to dot Redis list
+      db.rpush('dotty:dots',string_data , function(){
+
+        //Broadcast dot object to all connected
+        socket.broadcast.emit('place_dot', data);
+      });
+    }
   });
 
   //On disconnect event
@@ -110,17 +120,16 @@ if(typeof(roto_interval) !== 'undefined') {
 
 //Interval function for determining and broadcasting turns
 function cycle(){
+  console.log('Roto Length: ' + roto.length);
   if(roto.length < 1){
-    console.log('Clearing interval...');
+    console.log('clearing interval');
     clearInterval(roto_interval);
     roto_interval = undefined;
-    return;
   } else {
-    var current_id = roto[0];
-    console.log('Broadcasting current id:' + current_id);
-    socket.broadcast.emit('next', current_id);
     roto = roto.rotate(1);
-    return;
+    var current_id = roto[0];
+    console.log('Turn id:' + current_id + ' broadcast');
+    socket.broadcast.emit('next', current_id);
   }
 }
 
