@@ -30,8 +30,10 @@ function md5(plaintext, callback){
 **/
 io.sockets.on('connection', function(socket){
 
+var ip_addr = socket.handshake.address.address; 
+
 console.log('connection.....');
-md5(socket.handshake.address.address, function(ip_hash){
+md5(ip_addr, function(ip_hash){
   welcome(ip_hash, function(){});
 });
 
@@ -40,7 +42,7 @@ socket.on('ready', function(){
   console.log('recieved ready');
 
   //Get the user's IP hash
-  md5(socket.handshake.address.address, function(ip_hash){
+  md5(ip_addr, function(ip_hash){
 
     //Check if Redis has record of ID
     db.sismember('dotty:ids', ip_hash, function(err, data){
@@ -59,7 +61,7 @@ socket.on('ready', function(){
             roto.push(ip_hash);
 
             console.log('roto[...]: ' + roto);
-            socket.broadcast.emit('new_artist', ip_hash);
+            io.sockets.emit('new_artist', ip_hash);
 
             //Cycle every 3 seconds if interval doesn't exist already
             if(typeof(roto_interval) == 'undefined') {
@@ -82,7 +84,7 @@ socket.on('ready', function(){
   socket.on('update_color', function(data){
 
     //Broadcast data.id and .color and update avatar
-    socket.broadcast.emit('update_color', data);  
+    io.sockets.emit('update_color', data);  
   });
 
   //On recieving new dot info
@@ -90,7 +92,7 @@ socket.on('ready', function(){
     var string_data = JSON.stringify(data);
 
     //Get the user's IP hash
-    md5(socket.handshake.address.address, function(ip_hash){
+    md5(ip_addr, function(ip_hash){
       console.log('Trying to place dot: ' + ip_hash);
       console.log('On this guys turn: ' + roto[0]);
       if(ip_hash == roto[0]){
@@ -110,7 +112,7 @@ socket.on('ready', function(){
     console.log('Disconnect... roto: ' + roto);
 
     //Remove member from ip set
-    md5(socket.handshake.address.address, function(ip_hash){
+    md5(ip_addr, function(ip_hash){
       db.srem('dotty:ids', ip_hash, function(){
 
         //Remove ID from rotation array
@@ -134,7 +136,7 @@ function cycle(){
     roto = roto.rotate(1);
     var current_id = roto[0];
     console.log('Turn id:' + current_id + ' broadcast');
-    socket.broadcast.emit('next', current_id);
+    io.sockets.emit('next', current_id);
   }
 }
 
