@@ -6,7 +6,7 @@ var io = require('socket.io').listen(4444),
 roto = [];
 
 //Socket.IO setup
-//Lower default debug level to clean up console
+//Lower default debug level to clean up //console
 io.set('log level', 1);
 
 //Redis setup
@@ -32,14 +32,14 @@ io.sockets.on('connection', function(socket){
 
 var ip_addr = socket.handshake.address.address; 
 
-console.log('connection.....');
+//console.log('connection.....');
 md5(ip_addr, function(ip_hash){
   welcome(ip_hash, function(){});
 });
 
 //On ready TEST
 socket.on('ready', function(){
-  console.log('recieved ready');
+  //console.log('recieved ready');
 
   //Get the user's IP hash
   md5(ip_addr, function(ip_hash){
@@ -49,9 +49,9 @@ socket.on('ready', function(){
       if(err) throw err;
       if(data == 1){
         //TEST: Do nothing if id already connected
-        console.log('already connected');
+        //console.log('already connected');
       } else {
-        console.log('new connection');
+        //console.log('new connection');
 
         //Add new ID to set
         db.sadd('dotty:ids', ip_hash, function(){
@@ -60,12 +60,12 @@ socket.on('ready', function(){
           if(roto.indexOf(ip_hash) == -1){
             roto.push(ip_hash);
 
-            console.log('roto[...]: ' + roto);
+            //console.log('roto[...]: ' + roto);
             io.sockets.emit('new_artist', ip_hash);
 
             //Cycle every 3 seconds if interval doesn't exist already
             if(typeof(roto_interval) == 'undefined') {
-              console.log('Now we begin the turn broadcasts!');
+              //console.log('Now we begin the turn broadcasts!');
               roto_interval = setInterval(cycle, 3000);
             }
           }
@@ -93,8 +93,8 @@ socket.on('ready', function(){
 
     //Get the user's IP hash
     md5(ip_addr, function(ip_hash){
-      console.log('Trying to place dot: ' + ip_hash);
-      console.log('On this guys turn: ' + roto[0]);
+      //console.log('Trying to place dot: ' + ip_hash);
+      //console.log('On this guys turn: ' + roto[0]);
       if(ip_hash == roto[0]){
 
         //add dot info to dot Redis list
@@ -109,7 +109,7 @@ socket.on('ready', function(){
 
   //On disconnect event
   socket.on('disconnect', function(){
-    console.log('Disconnect... roto: ' + roto);
+    //console.log('Disconnect... roto: ' + roto);
 
     //Remove member from ip set
     md5(ip_addr, function(ip_hash){
@@ -127,25 +127,25 @@ socket.on('ready', function(){
 
 //Interval function for determining and broadcasting turns
 function cycle(){
-  console.log('Roto Length: ' + roto.length);
+  //console.log('Roto Length: ' + roto.length);
   if(roto.length < 1){
-    console.log('clearing interval');
+    //console.log('clearing interval');
     clearInterval(roto_interval);
     roto_interval = undefined;
   } else {
     roto = roto.rotate(1);
     var current_id = roto[0];
-    console.log('Turn id:' + current_id + ' broadcast');
+    //console.log('Turn id:' + current_id + ' broadcast');
     io.sockets.emit('next', current_id);
   }
 }
 
 //Function to emit welcome data
 function welcome(ip_hash, callback){
-  console.log('welcome: ' + ip_hash);
+  //console.log('welcome: ' + ip_hash);
   db.smembers('dotty:ids', function(err, ids){
     db.lrange('dotty:dots',0,-1, function(err, dots){
-      console.log('grabbing dots from redis...');
+      //console.log('grabbing dots from redis...');
       socket.emit('welcome', {'id': ip_hash,
                               'other_ids': ids,
                               'dots': dots});
