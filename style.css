@@ -1,6 +1,9 @@
-body {
-  font-family:"Chaparral Pro","Adobe Caslon Pro","Palatino",Georgia,"Times New Roman",Times,serif;
-  background-color: #B1C4F9;
+html {
+  font-family: 'Lato',"Helvetica Neue",Helvetica,Arial,sans-serif; 
+  background: -moz-linear-gradient(90deg, #88F, #FFF);
+  background: -webkit-linear-gradient(90deg, #88F, #FFF);
+  background-color: #88F;
+  min-height:100%;
 }
 
 img#title-image {
@@ -27,6 +30,7 @@ h2 {
 
 #artist-display {
   padding: 5px;
+  margin: 25px;
 }
 
 #current-turn {
