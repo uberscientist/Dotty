@@ -1,7 +1,7 @@
 var socket = io.connect('http://mindsforge.com:4444');
 
 /**
-  Functions
+* Functions
 **/
 
 //Dot drawing function
@@ -68,16 +68,8 @@ function warn(msg){
   });
 }
 
-//Check socket, reload if needed FF fix
-function check_ws(){
-  if(typeof(turn_flag) === 'undefined'){
-    location.reload(true);
-  }
-}
-
-
 /**
-  Socket.IO events
+* Socket.IO events
 **/
 
 //Recieve NEXT signal from server
@@ -112,6 +104,7 @@ socket.on('welcome', function(data){
   //append your marker to the end of the others
   add_artist(id);
   send_color();
+  socket.emit('ready');
 });
 
 //Recieve dot broadcast from server
@@ -144,13 +137,10 @@ socket.on('update_color', function(data){
 });
 
 /**
-  DOM JavaScript
+* DOM JavaScript
 **/
 
 $(document).ready(function(){
-
-  //Reload page after 4 seconds if can't hear broadcasts
-  setTimeout('check_ws()', 6000);
 
   //Initialize color picker to random color
   $('input.color').val(Math.floor(Math.random()*16777215).toString(16));
@@ -167,6 +157,11 @@ $(document).ready(function(){
     var scroll_top = $(window).scrollTop();
     var scroll_left = $(window).scrollLeft();
 
+    //check if turn_flag exists -- if it was defined by socket.io event
+    if(typeof(turn_flag) == 'undefined'){
+      warn('Error connecting to Socket.IO');
+      return;
+    }
     //check if if it's your turn
     if(turn_flag == true){
 
