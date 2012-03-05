@@ -33,7 +33,7 @@ h2 {
   margin: 25px;
 }
 
-#current-turn {
+#exclude-turn {
   position: absolute;
 }
 

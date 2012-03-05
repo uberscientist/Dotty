@@ -45,13 +45,6 @@ function update_artist(obj){
   $('div.artist#'+obj.id).css('background-color', '#'+obj.color);
 }
 
-//Update server with new dot info
-function update(obj){
-  socket.emit('place_dot',{ x     : obj.x,
-                            y     : obj.y,
-                            color : obj.color});
-}
-
 //Function to broadcast color
 function send_color(){
   var color = $('input.color').val();
@@ -62,36 +55,25 @@ function send_color(){
 
 //Warning message function
 function warn(msg){
-  $('div.warning').html(msg);
-  $('div.warning').fadeIn(200, function(){
-    $(this).fadeOut(1000);
-  });
+  $('div.warning').html(msg).fadeIn(200).delay(1500).fadeOut(200);
 }
 
 /**
 * Socket.IO events
 **/
 
-//Recieve NEXT signal from server
-socket.on('next', function(data){
-
-  var active_player = $('div#' + data + '.artist');
-  var active_pos = active_player.position();
-  $('img#current-turn').animate({ top : active_pos.top - 17,
-                                  left: active_pos.left - 2 }, 100);
-  if(data == id){
-    turn_flag = true;
-  } else {
-    turn_flag = false;
-  }
-});
-
-
 //Recieve WELCOME from server
 socket.on('welcome', function(data){
 
-  //Global id variable
+  //Global variables
   id = data.id;
+
+  //Check if you're the excluded id
+  if(data.exclude_id = id){
+    turn_flag = false;
+  } else {
+    turn_flag = true;
+  }
 
   //Loop through dot data and draw canvas
   for(var i = 0; i<data.dots.length; i++){
@@ -107,7 +89,24 @@ socket.on('welcome', function(data){
   socket.emit('ready');
 });
 
-//Recieve dot broadcast from server
+//Recieve EXCLUDE ID event
+socket.on('exclude_id', function(data){
+
+  //Set turn flag
+  if(data == id){
+    turn_flag = false;
+  } else {
+    turn_flag = true;
+  }
+
+  //Visually show excluded artist
+  var exclude_player = $('div#' + data + '.artist');
+  var exclude_pos = exclude_player.position();
+  $('img#exclude-turn').animate({ top : exclude_pos.top,
+                                  left: exclude_pos.left - 2 }, 25);
+});
+
+//Recieve PLACE DOT event from server
 socket.on('place_dot', function(data){
 
   //Add circle to context
@@ -157,12 +156,7 @@ $(document).ready(function(){
     var scroll_top = $(window).scrollTop();
     var scroll_left = $(window).scrollLeft();
 
-    //check if turn_flag exists -- if it was defined by socket.io event
-    if(typeof(turn_flag) == 'undefined'){
-      warn('Error connecting to Socket.IO');
-      return;
-    }
-    //check if if it's your turn
+    //check if if it's your turn (it's checked serverside too, no hacking)
     if(turn_flag == true){
 
       //Create dot info object
@@ -174,9 +168,9 @@ $(document).ready(function(){
       place_circle(obj);
 
       //Send server dot info
-      update(obj);
+      socket.emit('place_dot', obj);
     } else {
-      warn('Woah there! It\'s almost your turn.')
+      warn('Wait until someone else places a dot! Invite a friend.')
     }
   });
 
