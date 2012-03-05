@@ -3,7 +3,7 @@ var io = require('socket.io').listen(4444),
     redis = require('redis');
 
 //Socket.IO setup
-//Lower default debug level to clean up console
+//Lower default debug level to clean up //console
 io.set('log level', 1);
 
 //Redis setup
@@ -24,7 +24,7 @@ io.sockets.on('connection', function(socket){
 
 var ip_addr = socket.handshake.address.address; 
 
-console.log('connection.....');
+//console.log('connection.....');
 md5(ip_addr, function(ip_hash){
   welcome(ip_hash);
 });
@@ -35,7 +35,7 @@ md5(ip_addr, function(ip_hash){
   
   //Let server know DOM/Canvas/Artists are loaded clientside
   socket.on('ready', function(){
-    console.log('recieved ready');
+    //console.log('recieved ready');
 
     //Get the user's IP hash
     md5(ip_addr, function(ip_hash){
@@ -44,9 +44,9 @@ md5(ip_addr, function(ip_hash){
       db.sismember('dotty:ids', ip_hash, function(err, data){
         if(err) throw err;
         if(data == 1){
-          console.log('already connected');
+          //console.log('already connected');
         } else {
-          console.log('new connection');
+          //console.log('new connection');
 
           //Add new ID to set
           db.sadd('dotty:ids', ip_hash, function(){
@@ -102,7 +102,7 @@ md5(ip_addr, function(ip_hash){
 
   //On disconnect event
   socket.on('disconnect', function(){
-    console.log('Disconnect...');
+    //console.log('Disconnect...');
 
     //Remove member from ip set
     md5(ip_addr, function(ip_hash){
@@ -116,7 +116,7 @@ md5(ip_addr, function(ip_hash){
 
 //Function to emit welcome data
 function welcome(ip_hash){
-  console.log('welcome: ' + ip_hash);
+  //console.log('welcome: ' + ip_hash);
   db.multi()
     .get('dotty:exclude-id')
     .smembers('dotty:ids')

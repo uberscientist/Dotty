@@ -69,7 +69,7 @@ socket.on('welcome', function(data){
   id = data.id;
 
   //Check if you're the excluded id
-  if(data.exclude_id = id){
+  if(data.exclude_id == id){
     turn_flag = false;
   } else {
     turn_flag = true;
