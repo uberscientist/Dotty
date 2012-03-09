@@ -50,7 +50,12 @@ md5(ip_addr, function(ip_hash){
 
           //Add new ID to set
           db.sadd('dotty:ids', ip_hash, function(){
+              
+              //Emit new_artist to everyone and the exclude ID to the new guy
               io.sockets.emit('new_artist', ip_hash);
+              db.get('dotty:exclude-id', function(err, exclude_id){
+                socket.emit('exclude_id', exclude_id);
+              });
           });
         }
       });

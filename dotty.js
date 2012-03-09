@@ -53,10 +53,40 @@ function send_color(){
   update_artist(obj);
 }
 
+//Exclude player function
+function exclude_id(exclude_id){
+  //Set turn flag if id = exclude_id
+  if(id == exclude_id){
+    turn_flag = false;
+  } else {
+    turn_flag = true;
+  }
+
+  //Visually show excluded artist
+  var exclude_player = $('div#' + exclude_id + '.artist');
+  var exclude_pos = exclude_player.position();
+  $('img#exclude-turn').animate({ top : exclude_pos.top,
+                                  left: exclude_pos.left - 2 }, 25);
+}
+
 //Warning message function
 function warn(msg){
   $('div.warning').html(msg).fadeIn(200).delay(1500).fadeOut(200);
 }
+
+//Function to convert RGB to hex (Thanks Jim F from stackoverflow!)
+function rgb2hex(rgb) {
+  if (  rgb.search("rgb") == -1 ) {
+    return rgb;
+  } else {
+    rgb = rgb.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+))?\)$/);
+    function hex(x) {
+      return ("0" + parseInt(x).toString(16)).slice(-2);
+    }
+  return hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]); 
+  }
+}
+
 
 /**
 * Socket.IO events
@@ -67,13 +97,6 @@ socket.on('welcome', function(data){
 
   //Global variables
   id = data.id;
-
-  //Check if you're the excluded id
-  if(data.exclude_id == id){
-    turn_flag = false;
-  } else {
-    turn_flag = true;
-  }
 
   //Loop through dot data and draw canvas
   for(var i = 0; i<data.dots.length; i++){
@@ -91,19 +114,7 @@ socket.on('welcome', function(data){
 
 //Recieve EXCLUDE ID event
 socket.on('exclude_id', function(data){
-
-  //Set turn flag
-  if(data == id){
-    turn_flag = false;
-  } else {
-    turn_flag = true;
-  }
-
-  //Visually show excluded artist
-  var exclude_player = $('div#' + data + '.artist');
-  var exclude_pos = exclude_player.position();
-  $('img#exclude-turn').animate({ top : exclude_pos.top,
-                                  left: exclude_pos.left - 2 }, 25);
+  exclude_id(data);
 });
 
 //Recieve PLACE DOT event from server
@@ -178,4 +189,11 @@ $(document).ready(function(){
   $('input.color').change(function(){
     send_color();
   });
+});
+
+//Click event listener on .artist class divs
+$('div.artist').live('click', function(e){
+  //Get color of clicked div and change your picker color
+  var color = rgb2hex($(this).css('background-color'));
+  $('input.color').val(color).css('background-color', '#'+color).trigger('change');
 });
